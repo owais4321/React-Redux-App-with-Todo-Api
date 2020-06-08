@@ -98,6 +98,14 @@
             return state;
         }
       }
+      function loading(state=true,action){
+        switch(action.type){
+          case RECIEVE_DATA:
+            return false;
+          default:
+            return state;
+        }
+      }
       const checker = (store) => (next) => (action) => {
         if (
           action.type === ADD_TODO &&
@@ -124,13 +132,15 @@
         Redux.combineReducers({
           todos,
           goals,
+          loading
         }),
         Redux.applyMiddleware(checker, logger)
       );
     </script>
     <script type="text/babel">
       const List = (props) => (
-        <ul>
+      
+        <ul> 
           {props.items.map((item) => (
             <li key={item.id}>
               <span
@@ -178,7 +188,8 @@
               >
                 Add Goals
               </button>
-              <List items={this.props.goals} removeItem={this.removeItem} />
+              {!this.props.loading?(
+              <List items={this.props.goals} removeItem={this.removeItem} />):<p>Loading</p>}
             </div>
           );
         }
@@ -219,12 +230,14 @@
               >
                 Add Todo
               </button>
+              {!this.props.loading?(
               <List
                 items={this.props.todos}
                 toggle={true}
                 removeItem={this.removeItem}
                 toggleTodo={this.toggleTodo}
-              />
+              />):<p>Loading</p>
+              }
             </div>
           );
         }
@@ -241,11 +254,11 @@
         }
         render() {
           const { store } = this.props;
-          const { todos, goals } = store.getState();
+          const { todos, goals,loading } = store.getState();
           return (
             <div>
-              <Todos todos={todos} store={this.props.store} />
-              <Goals goals={goals} store={this.props.store} />
+              <Todos todos={todos} store={this.props.store} loading={loading}/>
+              <Goals goals={goals} store={this.props.store} loading={loading}/>
             </div>
           );
         }
