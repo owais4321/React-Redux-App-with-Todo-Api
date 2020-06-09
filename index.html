@@ -117,6 +117,29 @@
         };
       };
 
+      const addGoalHandler = (name, cb) => {
+        return (dispatch) => {
+          return API.saveGoal(name)
+            .then((goal) => {
+              dispatch(addGoalAction(goal));
+              cb();
+            })
+            .catch(() => {
+              alert("Something went wrong");
+            });
+        };
+      };
+
+      const removeGoalHandler = (goal) => {
+        return (dispatch) => {
+          dispatch(removeGoalAction(goal.id));
+          return API.deleteGoal(goal.id).catch(() => {
+            dispatch(addGoalAction(goal));
+            alert("problem");
+          });
+        };
+      };
+
       const checker = (store) => (next) => (action) => {
         if (
           action.type === ADD_TODO &&
@@ -131,6 +154,7 @@
           return alert("No I won't let you add");
         } else next(action);
       };
+
       const logger = (store) => (next) => (action) => {
         console.group(action.type);
         console.log("the actio is " + action);
@@ -177,21 +201,12 @@
       class Goals extends React.Component {
         addGoal = (e) => {
           e.preventDefault();
-          API.saveGoal(this.input.value)
-            .then((goal) => {
-              this.props.store.dispatch(addGoalAction(goal));
-              this.input.value = "";
-            })
-            .catch(() => {
-              alert("Something went wrong");
-            });
+          this.props.store.dispatch(
+            addGoalHandler(this.input.value, () => (this.input.value = ""))
+          );
         };
         removeItem = (item) => {
-          this.props.store.dispatch(removeGoalAction(item.id));
-          return API.deleteGoal("heck").catch(() => {
-            this.props.store.dispatch(addGoalAction(item));
-            alert("problem");
-          });
+          this.props.store.dispatch(removeGoalHandler(item));
         };
         render() {
           return (
