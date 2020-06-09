@@ -107,7 +107,20 @@
             return state;
         }
       }
-      const handleDelete = (item) => {
+
+      const addTodoHandler = (name, cb) => {
+        return (dispatch) => {
+          return API.saveTodo(name)
+            .then((todo) => {
+              dispatch(addTodoAction(todo));
+              cb();
+            })
+            .catch(() => {
+              alert("Something went wrong");
+            });
+        };
+      };
+      const removeTodoHandler = (item) => {
         return (dispatch) => {
           dispatch(removeTodoAction(item.id));
           return API.deleteTodo(item.id).catch(() => {
@@ -129,7 +142,15 @@
             });
         };
       };
-
+      const toggleTodoHandler = (id) => {
+        return (dispatch) => {
+          dispatch(toggleTodoAction(id));
+          return API.saveTodoToggle(id).catch(() => {
+            dispatch(toggleTodoAction(id));
+            alert("Error");
+          });
+        };
+      };
       const removeGoalHandler = (goal) => {
         return (dispatch) => {
           dispatch(removeGoalAction(goal.id));
@@ -236,24 +257,15 @@
       class Todos extends React.Component {
         addTodo = (e) => {
           e.preventDefault();
-          API.saveTodo(this.input.value)
-            .then((todo) => {
-              this.props.store.dispatch(addTodoAction(todo));
-              this.input.value = "";
-            })
-            .catch(() => {
-              alert("Something went wrong");
-            });
+          this.props.store.dispatch(
+            addTodoHandler(this.input.value, () => (this.input.value = ""))
+          );
         };
         removeItem = (item) => {
-          this.props.store.dispatch(handleDelete(item));
+          this.props.store.dispatch(removeTodoHandler(item));
         };
         toggleTodo = (id) => {
-          this.props.store.dispatch(toggleTodoAction(id));
-          API.saveTodoToggle(id).catch(() => {
-            this.props.store.dispatch(toggleTodoAction(id));
-            alert("Error");
-          });
+          this.props.store.dispatch(toggleTodoHandler(id));
         };
 
         render() {
