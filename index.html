@@ -8,6 +8,7 @@
     <script src="https://unpkg.com/react-dom@16.3.0-alpha.1/umd/react-dom.development.js"></script>
     <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
     <script src="https://tylermcginnis.com/goals-todos-api/index.js"></script>
+    <script src="https://unpkg.com/redux-thunk@2.2.0/dist/redux-thunk.min.js"></script>
     <title>Redux + React UI</title>
   </head>
   <body>
@@ -106,15 +107,15 @@
             return state;
         }
       }
-      const handleDelete=(item)=>{
-          return (dispatch)=>{dispatch(removeTodoAction(item.id));
-          return API.deleteTodo(item.id)
-          .catch(()=>{
+      const handleDelete = (item) => {
+        return (dispatch) => {
+          dispatch(removeTodoAction(item.id));
+          return API.deleteTodo(item.id).catch(() => {
             this.props.store.dispatch(addTodoAction(item));
             alert("Error");
           });
-          }
-      }
+        };
+      };
 
       const checker = (store) => (next) => (action) => {
         if (
@@ -138,12 +139,12 @@
         return results;
       };
 
-      const thunk =(store)=>(next)=>(action)=>{
-        if(typeof action==='function'){
-          return action(store.dispatch)
-        }
-        return next(action);
-      }
+      // const thunk =(store)=>(next)=>(action)=>{
+      //   if(typeof action==='function'){
+      //     return action(store.dispatch)
+      //   }
+      //   return next(action);
+      // }
 
       let store = Redux.createStore(
         Redux.combineReducers({
@@ -151,12 +152,11 @@
           goals,
           loading,
         }),
-        Redux.applyMiddleware(checker, logger,thunk)
+        Redux.applyMiddleware(ReduxThunk.default, checker, logger)
       );
     </script>
     <script type="text/babel">
       const List = (props) => (
-
         <ul>
           {props.items.map((item) => (
             <li key={item.id}>
@@ -178,18 +178,19 @@
         addGoal = (e) => {
           e.preventDefault();
           API.saveGoal(this.input.value)
-          .then((goal)=>{
-            this.props.store.dispatch(addGoalAction(goal))
-            this.input.value = "";
-          })
-          .catch(()=>{alert("Something went wrong")})
+            .then((goal) => {
+              this.props.store.dispatch(addGoalAction(goal));
+              this.input.value = "";
+            })
+            .catch(() => {
+              alert("Something went wrong");
+            });
         };
         removeItem = (item) => {
           this.props.store.dispatch(removeGoalAction(item.id));
-          return API.deleteGoal('heck')
-          .catch(()=>{
+          return API.deleteGoal("heck").catch(() => {
             this.props.store.dispatch(addGoalAction(item));
-            alert("problem")
+            alert("problem");
           });
         };
         render() {
@@ -208,8 +209,11 @@
               >
                 Add Goals
               </button>
-              {!this.props.loading?(
-              <List items={this.props.goals} removeItem={this.removeItem} />):<p>Loading</p>}
+              {!this.props.loading ? (
+                <List items={this.props.goals} removeItem={this.removeItem} />
+              ) : (
+                <p>Loading</p>
+              )}
             </div>
           );
         }
@@ -218,20 +222,21 @@
         addTodo = (e) => {
           e.preventDefault();
           API.saveTodo(this.input.value)
-          .then((todo)=>{
-            this.props.store.dispatch(addTodoAction(todo))
-            this.input.value = "";
-          })
-          .catch(()=>{alert("Something went wrong")})
+            .then((todo) => {
+              this.props.store.dispatch(addTodoAction(todo));
+              this.input.value = "";
+            })
+            .catch(() => {
+              alert("Something went wrong");
+            });
         };
         removeItem = (item) => {
           this.props.store.dispatch(handleDelete(item));
         };
         toggleTodo = (id) => {
           this.props.store.dispatch(toggleTodoAction(id));
-          API.saveTodoToggle(id)
-          .catch(()=>{
-          this.props.store.dispatch(toggleTodoAction(id));
+          API.saveTodoToggle(id).catch(() => {
+            this.props.store.dispatch(toggleTodoAction(id));
             alert("Error");
           });
         };
@@ -252,14 +257,16 @@
               >
                 Add Todo
               </button>
-              {!this.props.loading?(
-              <List
-                items={this.props.todos}
-                toggle={true}
-                removeItem={this.removeItem}
-                toggleTodo={this.toggleTodo}
-              />):<p>Loading</p>
-              }
+              {!this.props.loading ? (
+                <List
+                  items={this.props.todos}
+                  toggle={true}
+                  removeItem={this.removeItem}
+                  toggleTodo={this.toggleTodo}
+                />
+              ) : (
+                <p>Loading</p>
+              )}
             </div>
           );
         }
@@ -267,20 +274,20 @@
       class App extends React.Component {
         componentDidMount() {
           const { store } = this.props;
-          Promise
-            .all([API.fetchTodos(), API.fetchGoals()])
-            .then(([todos, goals]) => {
-              store.dispatch(recieveDataAction(todos,goals));
-            });
+          Promise.all([API.fetchTodos(), API.fetchGoals()]).then(
+            ([todos, goals]) => {
+              store.dispatch(recieveDataAction(todos, goals));
+            }
+          );
           store.subscribe(() => this.forceUpdate());
         }
         render() {
           const { store } = this.props;
-          const { todos, goals,loading } = store.getState();
+          const { todos, goals, loading } = store.getState();
           return (
             <div>
-              <Todos todos={todos} store={this.props.store} loading={loading}/>
-              <Goals goals={goals} store={this.props.store} loading={loading}/>
+              <Todos todos={todos} store={this.props.store} loading={loading} />
+              <Goals goals={goals} store={this.props.store} loading={loading} />
             </div>
           );
         }
