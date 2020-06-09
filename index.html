@@ -59,12 +59,12 @@
           id,
         };
       }
-      function recieveDataAction(todos,goals){
+      function recieveDataAction(todos, goals) {
         return {
-          type:RECIEVE_DATA,
+          type: RECIEVE_DATA,
           todos,
           goals,
-        }
+        };
       }
 
       function todos(state = [], action) {
@@ -80,7 +80,7 @@
                 : Object.assign({}, todo, { complete: !todo.complete })
             );
           case RECIEVE_DATA:
-            return action.todos
+            return action.todos;
           default:
             return state;
         }
@@ -93,13 +93,13 @@
           case REMOVE_GOAL:
             return state.filter((s) => s.id !== action.id);
           case RECIEVE_DATA:
-            return action.goals
+            return action.goals;
           default:
             return state;
         }
       }
-      function loading(state=true,action){
-        switch(action.type){
+      function loading(state = true, action) {
+        switch (action.type) {
           case RECIEVE_DATA:
             return false;
           default:
@@ -132,15 +132,15 @@
         Redux.combineReducers({
           todos,
           goals,
-          loading
+          loading,
         }),
         Redux.applyMiddleware(checker, logger)
       );
     </script>
     <script type="text/babel">
       const List = (props) => (
-      
-        <ul> 
+
+        <ul>
           {props.items.map((item) => (
             <li key={item.id}>
               <span
@@ -160,14 +160,12 @@
       class Goals extends React.Component {
         addGoal = (e) => {
           e.preventDefault();
-          const title = this.input.value;
-          this.input.value = "";
-          this.props.store.dispatch(
-            addGoalAction({
-              id: generateId(),
-              name: title,
-            })
-          );
+          API.saveGoal(this.input.value)
+          .then((goal)=>{
+            this.props.store.dispatch(addGoalAction(goal))
+            this.input.value = "";
+          })
+          .catch(()=>{alert("Something went wrong")})
         };
         removeItem = (item) => {
           this.props.store.dispatch(removeGoalAction(item.id));
@@ -202,15 +200,12 @@
       class Todos extends React.Component {
         addTodo = (e) => {
           e.preventDefault();
-          const title = this.input.value;
-          this.input.value = "";
-          this.props.store.dispatch(
-            addTodoAction({
-              id: generateId(),
-              name: title,
-              complete: false,
-            })
-          );
+          API.saveTodo(this.input.value)
+          .then((todo)=>{
+            this.props.store.dispatch(addTodoAction(todo))
+            this.input.value = "";
+          })
+          .catch(()=>{alert("Something went wrong")})
         };
         removeItem = (item) => {
           this.props.store.dispatch(removeTodoAction(item.id));
