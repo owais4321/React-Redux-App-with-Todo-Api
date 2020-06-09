@@ -108,6 +108,15 @@
         }
       }
 
+      const initialDataHandler = () => {
+        return (dispatch)=>{
+        return Promise.all([API.fetchTodos(), API.fetchGoals()]).then(
+            ([todos, goals]) => {
+              dispatch(recieveDataAction(todos, goals));
+            }
+          );
+        }
+      }
       const addTodoHandler = (name, cb) => {
         return (dispatch) => {
           return API.saveTodo(name)
@@ -301,11 +310,7 @@
       class App extends React.Component {
         componentDidMount() {
           const { store } = this.props;
-          Promise.all([API.fetchTodos(), API.fetchGoals()]).then(
-            ([todos, goals]) => {
-              store.dispatch(recieveDataAction(todos, goals));
-            }
-          );
+          store.dispatch(initialDataHandler())
           store.subscribe(() => this.forceUpdate());
         }
         render() {
