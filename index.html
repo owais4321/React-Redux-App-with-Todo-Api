@@ -109,13 +109,13 @@
       const checker = (store) => (next) => (action) => {
         if (
           action.type === ADD_TODO &&
-          action.todo.title.toLowerCase().includes("bitcoin")
+          action.todo.name.toLowerCase().includes("bitcoin")
         ) {
           return alert("No I won't let you add");
         }
         if (
           action.type === ADD_GOAL &&
-          action.goal.title.toLowerCase().includes("bitcoin")
+          action.goal.name.toLowerCase().includes("bitcoin")
         ) {
           return alert("No I won't let you add");
         } else next(action);
@@ -171,6 +171,11 @@
         };
         removeItem = (item) => {
           this.props.store.dispatch(removeGoalAction(item.id));
+          return API.deleteGoal('heck')
+          .catch(()=>{
+            this.props.store.dispatch(addGoalAction(item));
+            alert("problem")
+          });
         };
         render() {
           return (
@@ -209,9 +214,19 @@
         };
         removeItem = (item) => {
           this.props.store.dispatch(removeTodoAction(item.id));
+          return API.deleteTodo(item.id)
+          .catch(()=>{
+            this.props.store.dispatch(addTodoAction(item));
+            alert("Error");
+          });
         };
         toggleTodo = (id) => {
           this.props.store.dispatch(toggleTodoAction(id));
+          API.saveTodoToggle(id)
+          .catch(()=>{
+          this.props.store.dispatch(toggleTodoAction(id));
+            alert("Error");
+          });
         };
 
         render() {
