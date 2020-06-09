@@ -106,6 +106,16 @@
             return state;
         }
       }
+      const handleDelete=(item)=>{
+          return (dispatch)=>{dispatch(removeTodoAction(item.id));
+          return API.deleteTodo(item.id)
+          .catch(()=>{
+            this.props.store.dispatch(addTodoAction(item));
+            alert("Error");
+          });
+          }
+      }
+
       const checker = (store) => (next) => (action) => {
         if (
           action.type === ADD_TODO &&
@@ -128,13 +138,20 @@
         return results;
       };
 
+      const thunk =(store)=>(next)=>(action)=>{
+        if(typeof action==='function'){
+          return action(store.dispatch)
+        }
+        return next(action);
+      }
+
       let store = Redux.createStore(
         Redux.combineReducers({
           todos,
           goals,
           loading,
         }),
-        Redux.applyMiddleware(checker, logger)
+        Redux.applyMiddleware(checker, logger,thunk)
       );
     </script>
     <script type="text/babel">
@@ -208,12 +225,7 @@
           .catch(()=>{alert("Something went wrong")})
         };
         removeItem = (item) => {
-          this.props.store.dispatch(removeTodoAction(item.id));
-          return API.deleteTodo(item.id)
-          .catch(()=>{
-            this.props.store.dispatch(addTodoAction(item));
-            alert("Error");
-          });
+          this.props.store.dispatch(handleDelete(item));
         };
         toggleTodo = (id) => {
           this.props.store.dispatch(toggleTodoAction(id));
